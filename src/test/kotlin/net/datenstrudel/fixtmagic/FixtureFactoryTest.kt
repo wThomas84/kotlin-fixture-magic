@@ -2,6 +2,7 @@ package net.datenstrudel.fixtmagic
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,6 +11,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import kotlin.reflect.KClass
 
 
 class FixtureFactoryTest {
@@ -467,6 +469,51 @@ class FixtureFactoryTest {
             log.info("$res")
         }
 
+    }
+
+    class PrivateCreationType private constructor(){
+        lateinit var a: String
+
+        companion object {
+            fun createInstance(a: String): PrivateCreationType {
+                val res = PrivateCreationType()
+                res.a = a
+                return res
+            }
+        }
+        override fun toString(): String {
+            return "PrivateCreationType(a='$a')"
+        }
+    }
+
+    @Nested
+    inner class CustomCreatorTests {
+
+        @RepeatedTest(5)
+        fun `it should allow to override creation of already supported type` (){
+            val customIntCreator = object: CustomCreator<Int> {
+                override fun supports(clazz: KClass<*>) = clazz == Int::class
+                override fun create(fixtureFactory: FixtureFactory) = 42
+            }
+
+            val factory = FixtureFactory.build { customCreators = arrayOf(customIntCreator) }
+
+            assertThat(factory.createInstance<Int>()).isEqualTo(42)
+        }
+
+        @Test
+        fun `it should allow to create types, having no accessible constructor` (){
+            val customCreator = object: CustomCreator<PrivateCreationType> {
+                override fun supports(clazz: KClass<*>) = clazz == PrivateCreationType::class
+                override fun create(fixtureFactory: FixtureFactory) = PrivateCreationType.createInstance("testString")
+            }
+            val factory = FixtureFactory.build { customCreators = arrayOf(customCreator) }
+
+            val res = factory.createInstance<PrivateCreationType>()
+
+            assertThat(res.a).isEqualTo("testString")
+            log.info("$res")
+        }
     }
 
 }

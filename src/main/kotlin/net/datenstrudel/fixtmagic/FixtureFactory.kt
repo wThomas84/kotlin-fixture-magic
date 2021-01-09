@@ -17,14 +17,16 @@ class FixtureFactory private constructor(
     val randomIntRange: IntRange,
     val randomStringLength: Int = 10,
     val randomArrayLength: Int = 10,
-    val randomCollectionSize: Int = 10
+    val randomCollectionSize: Int = 10,
+    private val customCreators: Set<CustomCreator<*>>
 ) {
 
     private constructor(builder: Builder) : this(
         randomIntRange = builder.randomIntRange,
         randomStringLength = builder.randomStringLength,
         randomArrayLength = builder.randomArrayLength,
-        randomCollectionSize = builder.randomCollectionSize
+        randomCollectionSize = builder.randomCollectionSize,
+        customCreators = builder.customCreators.toSet()
     )
 
     private val rand = Random
@@ -58,6 +60,9 @@ class FixtureFactory private constructor(
     }
 
     private fun createInstance(clazz: KClass<*>, type: KType, typeParams: Map<KTypeParameter, KType?>? = null, paramName: String? = null): Any{
+        val customCreation = createCustomTypeOrNull(clazz, typeParams, paramName)
+        customCreation?.let { return it }
+
         val primitive = createStandardInstanceOrNull(clazz, type, paramName)
         primitive?.let { return it }
 
@@ -83,6 +88,13 @@ class FixtureFactory private constructor(
             }
         }
         throw lastThrow ?: NoUsableConstructorFound("Couldn't create instance of type=${clazz.jvmName}")
+    }
+
+    private fun createCustomTypeOrNull(clazz: KClass<*>, typeParams: Map<KTypeParameter, KType?>?, paramName: String? ): Any? {
+        val creator = customCreators.find { it.supports(clazz) }
+        return creator?.let {
+            creator.create(this)
+        }
     }
 
     private fun createStandardInstanceOrNull(clazz: KClass<*>, type: KType, paramName: String?): Any? {
@@ -269,7 +281,8 @@ class FixtureFactory private constructor(
         var randomIntRange: IntRange = IntRange(0, Int.MAX_VALUE),
         var randomStringLength: Int = 10,
         var randomArrayLength: Int = 10,
-        var randomCollectionSize: Int = 10
+        var randomCollectionSize: Int = 10,
+        var customCreators: Array<CustomCreator<*>> = arrayOf()
     ) {
         fun build() = FixtureFactory(this)
     }
