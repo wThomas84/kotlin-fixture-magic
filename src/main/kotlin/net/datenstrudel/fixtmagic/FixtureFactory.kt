@@ -62,7 +62,7 @@ class FixtureFactory private constructor(
     }
 
     private fun createInstance(clazz: KClass<*>, type: KType, typeParams: Map<KTypeParameter, KType?>? = null, paramName: String? = null): Any{
-        val enumSelection = selectEnumOrNull(clazz)
+        val enumSelection = resolveEnumOrNull(clazz)
         enumSelection?.let { return it }
 
         val customCreation = createCustomTypeOrNull(clazz, typeParams, paramName)
@@ -71,6 +71,10 @@ class FixtureFactory private constructor(
         val stdInstance = createStandardInstanceOrNull(clazz, type, paramName)
         stdInstance?.let { return it }
 
+        return constructInstance(clazz, typeParams)
+    }
+
+    private fun constructInstance(clazz: KClass<*>, typeParams: Map<KTypeParameter, KType?>?): Any {
         val constructors = clazz.constructors
             .sortedBy { it.parameters.size }
 
@@ -85,8 +89,8 @@ class FixtureFactory private constructor(
                         createInstance(typeToCreate, typeParams, it.second)
                     }
                     .toTypedArray()
-                    constructor.isAccessible = true
-                    return constructor.call(*arguments)
+                constructor.isAccessible = true
+                return constructor.call(*arguments)
             } catch (e: Throwable) {
                 lastThrow = e
                 log.debug("Couldn't create instance", e)
@@ -95,7 +99,7 @@ class FixtureFactory private constructor(
         throw lastThrow ?: NoUsableConstructorFound("Couldn't create instance of type=${clazz.jvmName}")
     }
 
-    private fun selectEnumOrNull(clazz: KClass<*>): Any? {
+    private fun resolveEnumOrNull(clazz: KClass<*>): Any? {
         if(!clazz.isSubclassOf(Enum::class)) return null
 
         val enumConsts = clazz.java.enumConstants
