@@ -5,13 +5,11 @@ import java.lang.RuntimeException
 import java.time.Instant
 import java.time.ZoneId
 import kotlin.random.Random
-import kotlin.reflect.KClass
-import kotlin.reflect.KType
-import kotlin.reflect.KTypeParameter
+import kotlin.reflect.*
+import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
-import kotlin.reflect.typeOf
 
 class FixtureFactory private constructor(
     val randomIntRange: IntRange,
@@ -64,6 +62,9 @@ class FixtureFactory private constructor(
     }
 
     private fun createInstance(clazz: KClass<*>, type: KType, typeParams: Map<KTypeParameter, KType?>? = null, paramName: String? = null): Any{
+        val enumSelection = selectEnumOrNull(clazz)
+        enumSelection?.let { return it }
+
         val customCreation = createCustomTypeOrNull(clazz, typeParams, paramName)
         customCreation?.let { return it }
 
@@ -92,6 +93,15 @@ class FixtureFactory private constructor(
             }
         }
         throw lastThrow ?: NoUsableConstructorFound("Couldn't create instance of type=${clazz.jvmName}")
+    }
+
+    private fun selectEnumOrNull(clazz: KClass<*>): Any? {
+        if(!clazz.isSubclassOf(Enum::class)) return null
+
+        val enumConsts = clazz.java.enumConstants
+        val randIdx = rand.nextInt(0, enumConsts.size - 1)
+
+        return enumConsts[randIdx]
     }
 
     private fun createCustomTypeOrNull(clazz: KClass<*>, typeParams: Map<KTypeParameter, KType?>?, paramName: String? ): Any? {

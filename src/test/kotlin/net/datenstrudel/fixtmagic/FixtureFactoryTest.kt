@@ -55,6 +55,27 @@ class FixtureFactoryTest {
         assertThat(res.str).hasSize(fixtureFactory.randomStringLength)
     }
 
+
+    enum class TestEnum{
+        ONE, TWO
+    }
+
+    @Test
+    fun `it should support enums by randomly returning an instance`(){
+        val res = fixtureFactory.createInstance<TestEnum>()
+
+        assertThat(res).isInstanceOf(TestEnum::class.java)
+    }
+
+    data class TypeWithEnumParam(val a: TestEnum)
+    @Test
+    fun `it should support enums as parameter`(){
+
+        val res = fixtureFactory.createInstance<TypeWithEnumParam>()
+
+        assertThat(res.a).isInstanceOf(TestEnum::class.java)
+    }
+
     @Test
     fun `it should be creatable by Builder with default params`(){
         val res = FixtureFactory.build{}
@@ -82,7 +103,7 @@ class FixtureFactoryTest {
     }
 
     @Test
-    fun `bulkOperations - should return correctly configureed BulkFixtureFactory`() {
+    fun `bulkOperations() - should return correctly configureed BulkFixtureFactory`() {
         val res = fixtureFactory.bulkOperations("org.my.package")
 
         assertThat(res.basePackage).isEqualTo("org.my.package")

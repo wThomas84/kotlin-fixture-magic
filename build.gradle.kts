@@ -2,6 +2,7 @@ plugins {
     val kotlinVersion = "1.4.21"
     id ("java")
     kotlin("jvm")  version(kotlinVersion)
+    id("maven-publish")
 }
 
 group = "net.datenstrudel.fixtmagic"
@@ -10,6 +11,7 @@ version = "1.0-SNAPSHOT"
 val jdkVersion = "11"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url = uri("https://plugins.gradle.org/m2/")
@@ -54,5 +56,24 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = jdkVersion
+    }
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+    classifier = "sources"
+    from(sourceSets.main.get().allSource)
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri("$buildDir/repo")
+        }
+    }
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            from(components["kotlin"])
+            artifact(sourcesJar.get())
+        }
     }
 }
