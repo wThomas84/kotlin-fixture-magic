@@ -81,6 +81,13 @@ class FixtureFactoryTest {
 
     }
 
+    @Test
+    fun `bulkOperations - should return correctly configureed BulkFixtureFactory`() {
+        val res = fixtureFactory.bulkOperations("org.my.package")
+
+        assertThat(res.basePackage).isEqualTo("org.my.package")
+    }
+
     data class GenericType<T>(val b: T)
 
     data class ParentGenericType<T>(val a: ChildGenericType<T>)

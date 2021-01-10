@@ -31,6 +31,10 @@ class FixtureFactory private constructor(
 
     private val rand = Random
 
+    fun bulkOperations(basePackage: String): BulkFixtureFactory {
+        return BulkFixtureFactory(basePackage, this)
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     inline fun <reified T> createInstance(): T{
         return createInstance(typeOf<T>(), null, null) as T
@@ -63,8 +67,8 @@ class FixtureFactory private constructor(
         val customCreation = createCustomTypeOrNull(clazz, typeParams, paramName)
         customCreation?.let { return it }
 
-        val primitive = createStandardInstanceOrNull(clazz, type, paramName)
-        primitive?.let { return it }
+        val stdInstance = createStandardInstanceOrNull(clazz, type, paramName)
+        stdInstance?.let { return it }
 
         val constructors = clazz.constructors
             .sortedBy { it.parameters.size }

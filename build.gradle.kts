@@ -22,6 +22,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-allopen")
     implementation("org.jetbrains.kotlin:kotlin-noarg")
 
+    implementation("org.reflections:reflections:0.9.12")
+
     api("org.slf4j:slf4j-api:1.7.25")
 
 
@@ -32,7 +34,6 @@ dependencies {
 
     testImplementation("org.slf4j:slf4j-simple:1.7.25")
 
-//    https://github.com/ronmamo/reflections
 }
 
 configure<JavaPluginConvention> {
