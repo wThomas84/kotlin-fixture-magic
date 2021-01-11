@@ -1,4 +1,4 @@
-# fixture-magic
+# kotlin-fixture-magic
 
 Allows creation of random instances of (many) arbitrary classes in Kotlin.
 Works only on JVM.
@@ -6,7 +6,7 @@ Works only on JVM.
 ## Why?
 During testing we often encounter situations where instances of Value classes or domain classes
 are required in order to test the underlying code. Many times it is not important what the values contain,
-but that there actual values the code under test can work with.
+but that there are actual values the code under test can work with.
 
 This lib allows to create such random instances, without the need to fill in
 endless constructor arguments.
@@ -36,9 +36,9 @@ Now, in order to create a random instance of `Car` you would:
 ```kotlin
 val factory = FixtureFactory.build {}
 
-val randomElectricCar = factory.createInstance < Car<ElectricEngine>()
+val randomElectricCar = factory.createInstance<Car<ElectricEngine>()
 
-println("$randomElectricCar")
+println(randomElectricCar)
 
 >>> Car(name=name_3#wYu, age=-11130, engine=ElectricEngine(name=name_LVRF)))
 ```
@@ -60,17 +60,11 @@ println("$randomElectricCar")
     * `ZoneId`, `Instant`, `LocalDate`, `LocalDateTime`, `ZonedDateTime` 
  * `CustomCreator`s - allow you to manually implement instantiation strategy of types that are not supported out of the box
     or to override existing behavior for a given type
+ * Bulk creation of instances by shared annotation or common super class => `FixtureFactory.bulkOperations(..)` returns a
+   bulk creation factory
+ * Customization of random lengths of primitive values and arrays (not complete)  (look what the `FixtureFactory.build{}` block has to offer)
 
-## Worth to know
- 
-  * The lib tries to use all constructors of a given type until it finds one that works. While searching for a working constructor,
-    it starts with the one, having the shortest argument size
-
-## Known issues / not supported
- * JVM only
- * Creation of arbitrary interface types is not supported (but can be solved by implementing a `CustomCreator` `)
-
-## Custom creators
+### Custom creators
 With `CustomCreator`s you can implement or override the instantiation strategy of a specific type.
 
 In order to do so, implement the interface `CustomCreator` for the troubling type and register it on
@@ -86,10 +80,40 @@ val customStringCreator = object: CustomCreator<String> {
 val factory = FixtureFactory.build{
     customCreators = arrayOf(customStringCreator)
 }
-
 ```
 Using the factory, created above, will now always put String instances as defined in `customStringCreator.create(..)`
 into any parameters of type String that might be required to build the whole object hierarchy.
 
 The `create(..)` function gets also the `FixtureFactory` which allows you to create random instances of parameters that might
 be necessary to instantiate your custom type.
+
+### Bulk creation
+
+#### Create instances of sub types of `SomeSuperType`
+```kotlin
+val bulkFactory = FixtureFactory.build{}.bulkOperations("root.package.to.search")
+
+bulkFactory.createInstancesOfSubclasses<SomeSuperType>()
+```
+
+#### Create instances of classes annotated with `@SomeAnnotation`
+```kotlin
+val bulkFactory = FixtureFactory.build{}.bulkOperations("root.package.to.search")
+
+bulkFactory.createInstancesByAnnotation<SomeAnnotation>()
+```
+
+## Worth to know
+ 
+  * The lib tries to use all constructors of a given type until it finds one that works. While searching for a working constructor,
+    it starts with the one, having the shortest argument size
+
+## Known issues / not supported
+ * JVM only
+ * Creation of arbitrary interface types is not supported (but can be solved by implementing a `CustomCreator` `)
+
+## Contribution
+Suggestions and pull requests are very welcome 💎
+
+## License
+Apache License Version 2.0
