@@ -1,6 +1,8 @@
 package net.datenstrudel.kotlin_fixture_magic
 
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
 
 /**
  * Gives full control over instantiation of a specific type.
@@ -15,5 +17,5 @@ interface CustomCreator<T: Any> {
      * the return value of this function
      * @return an instance of clazz where [this.supports()] returns true for
      */
-    fun create(fixtureFactory: FixtureFactory): T
+    fun create(fixtureFactory: FixtureFactory, typeParams: Map<KTypeParameter, KType?>?, paramName: String?): T
 }

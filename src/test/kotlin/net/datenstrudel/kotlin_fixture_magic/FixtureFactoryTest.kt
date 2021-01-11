@@ -12,6 +12,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
 
 
 class FixtureFactoryTest {
@@ -521,7 +523,11 @@ class FixtureFactoryTest {
         fun `it should allow to override creation of already supported type` (){
             val customIntCreator = object: CustomCreator<Int> {
                 override fun supports(clazz: KClass<*>) = clazz == Int::class
-                override fun create(fixtureFactory: FixtureFactory) = 42
+                override fun create(
+                    fixtureFactory: FixtureFactory,
+                    typeParams: Map<KTypeParameter, KType?>?,
+                    paramName: String?
+                ): Int = 42
             }
 
             val factory = FixtureFactory.build { customCreators = arrayOf(customIntCreator) }
@@ -533,7 +539,11 @@ class FixtureFactoryTest {
         fun `it should allow to create types, having no accessible constructor` (){
             val customCreator = object: CustomCreator<PrivateCreationType> {
                 override fun supports(clazz: KClass<*>) = clazz == PrivateCreationType::class
-                override fun create(fixtureFactory: FixtureFactory) = PrivateCreationType.createInstance("testString")
+                override fun create(
+                    fixtureFactory: FixtureFactory,
+                    typeParams: Map<KTypeParameter, KType?>?,
+                    paramName: String?
+                ): PrivateCreationType = PrivateCreationType.createInstance("testString")
             }
             val factory = FixtureFactory.build { customCreators = arrayOf(customCreator) }
 

@@ -2,8 +2,7 @@ package net.datenstrudel.kotlin_fixture_magic
 
 import org.slf4j.LoggerFactory
 import java.lang.RuntimeException
-import java.time.Instant
-import java.time.ZoneId
+import java.time.*
 import kotlin.random.Random
 import kotlin.reflect.*
 import kotlin.reflect.full.isSubclassOf
@@ -130,7 +129,7 @@ class FixtureFactory private constructor(
     private fun createCustomTypeOrNull(clazz: KClass<*>, typeParams: Map<KTypeParameter, KType?>?, paramName: String? ): Any? {
         val creator = customCreators.find { it.supports(clazz) }
         return creator?.let {
-            creator.create(this)
+            creator.create(this, typeParams, paramName)
         }
     }
 
@@ -165,6 +164,9 @@ class FixtureFactory private constructor(
             // Java Time
             ZoneId::class -> ZoneId.systemDefault()
             Instant::class -> Instant.ofEpochMilli(rand.nextLong())
+            LocalDate::class -> LocalDate.now().minusDays(rand.nextInt().toShort().toLong())
+            LocalDateTime::class -> LocalDateTime.now().minusDays(rand.nextInt().toShort().toLong())
+            ZonedDateTime::class -> ZonedDateTime.now().minusDays(rand.nextInt().toShort().toLong())
 
             else -> null
         }
@@ -306,13 +308,13 @@ class FixtureFactory private constructor(
      * `kotlin.Collection.toTypedArray()` return an `Array<Object>`. This function allows to create the correctly typed
      * array by using the supplied `elemType`
      */
+    @Suppress("UNCHECKED_CAST")
     private fun toTypedArray(list: List<Any>, elemType: KType): Any {
         val resArray: Array<Any> =
             java.lang.reflect.Array.newInstance((elemType.classifier as KClass<*>).java, randomArrayLength) as Array<Any>
         list.forEachIndexed{ i, it -> resArray[i] = it }
         return resArray
     }
-
 
     class Builder(
         var randomIntRange: IntRange = IntRange(0, Int.MAX_VALUE),

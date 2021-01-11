@@ -73,7 +73,7 @@ internal class BulkFixtureFactoryTest {
     annotation class NonInstantiable
 
     companion object {
-        const val BASE_PACKAGE = "net.datenstrudel.fixtmagic"
+        const val BASE_PACKAGE = "net.datenstrudel.kotlin_fixture_magic"
 
     }
 }
