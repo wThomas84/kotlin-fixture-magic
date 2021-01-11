@@ -119,3 +119,5 @@ fabric.properties
 .gradle/
 build
 .idea
+*.hprof
+
