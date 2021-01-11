@@ -1,4 +1,4 @@
-package net.datenstrudel.fixtmagic
+package net.datenstrudel.kotlin_fixture_magic
 
 import org.slf4j.LoggerFactory
 import java.lang.RuntimeException
@@ -11,6 +11,18 @@ import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
 
+/**
+ * This is the main artifact to interact with as client of this lib.
+ *
+ * The [FixtureFactory] allows you to create random instances of arbitrary types, given there
+ * is a usable constructor.
+ *
+ * To obtain an instance call [FixtureFactory.build{}]
+ *
+ * To create a random instance call `factory.createInstance<MyClass>()`
+ *
+ * To perform buklkOperations acquire a [BulkFixtureFactory] by calling `factory.bulkOperations()`
+ */
 class FixtureFactory private constructor(
     val randomIntRange: IntRange,
     val randomStringLength: Int = 10,
@@ -29,10 +41,17 @@ class FixtureFactory private constructor(
 
     private val rand = Random
 
+    /**
+     * @return the [BulkFixtureFactory] to create instances of annotated types or by super type.
+     */
     fun bulkOperations(basePackage: String): BulkFixtureFactory {
         return BulkFixtureFactory(basePackage, this)
     }
 
+    /**
+     * Create random instance of supplied type `T`
+     * @return instance of T with all its members initialized to random values
+     */
     @OptIn(ExperimentalStdlibApi::class)
     inline fun <reified T> createInstance(): T{
         return createInstance(typeOf<T>(), null, null) as T
@@ -62,11 +81,11 @@ class FixtureFactory private constructor(
     }
 
     private fun createInstance(clazz: KClass<*>, type: KType, typeParams: Map<KTypeParameter, KType?>? = null, paramName: String? = null): Any{
-        val enumSelection = resolveEnumOrNull(clazz)
-        enumSelection?.let { return it }
-
         val customCreation = createCustomTypeOrNull(clazz, typeParams, paramName)
         customCreation?.let { return it }
+
+        val enumSelection = resolveEnumOrNull(clazz)
+        enumSelection?.let { return it }
 
         val stdInstance = createStandardInstanceOrNull(clazz, type, paramName)
         stdInstance?.let { return it }
@@ -308,6 +327,9 @@ class FixtureFactory private constructor(
     companion object {
         val log = LoggerFactory.getLogger(this::class.java)
 
+        /**
+         * Obtain an instance of [FixtureFactory]. Customize by applying parameters in expected `block`
+         */
         inline fun build(block: Builder.() -> Unit) = Builder().apply(block).build()
     }
 }

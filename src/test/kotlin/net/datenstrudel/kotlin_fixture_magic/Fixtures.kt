@@ -1,4 +1,4 @@
-package net.datenstrudel.fixtmagic
+package net.datenstrudel.kotlin_fixture_magic
 
 class SimpleClass
 

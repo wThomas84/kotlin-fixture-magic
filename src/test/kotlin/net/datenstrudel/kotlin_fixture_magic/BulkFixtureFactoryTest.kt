@@ -1,8 +1,7 @@
-package net.datenstrudel.fixtmagic
+package net.datenstrudel.kotlin_fixture_magic
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 
 internal class BulkFixtureFactoryTest {
 

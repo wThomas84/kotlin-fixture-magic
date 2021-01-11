@@ -1,4 +1,4 @@
-package net.datenstrudel.fixtmagic
+package net.datenstrudel.kotlin_fixture_magic
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -542,6 +542,26 @@ class FixtureFactoryTest {
             assertThat(res.a).isEqualTo("testString")
             log.info("$res")
         }
+    }
+
+    data class Car<T : Engine>(val name: String, val age: Short, val engine: T)
+
+    interface Engine{
+        fun supportsElectricity(): Boolean
+    }
+
+    data class ElectricEngine(val name: String) : Engine {
+        override fun supportsElectricity() = true
+    }
+    @Test
+    fun `the readme example should work`(){
+        val electroCar = fixtureFactory.createInstance<Car<ElectricEngine>>()
+
+        assertThat(electroCar.engine.name).isNotBlank()
+        assertThat(electroCar.engine.supportsElectricity()).isTrue()
+        assertThat(electroCar.name).isNotBlank()
+        println("$electroCar")
+        log.info("$electroCar")
     }
 
 }

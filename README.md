@@ -20,26 +20,27 @@ random instances with all values filled in order to automate testing of (de-)ser
 
 Given the following value types:
 ```kotlin
-
-class Car<T : Engine>(val name: String, val age: Short, val engine: T)
+data class Car<T : Engine>(val name: String, val age: Short, val engine: T)
 
 interface Engine{
-    fun supportsElectricity(): Boolean 
+    fun supportsElectricity(): Boolean
 }
 
-data class ElectricEngine(name: String) : Engine {
-    fun supportsElectricity() = true
+data class ElectricEngine(val name: String) : Engine {
+    override fun supportsElectricity() = true
 }
-
 ```
 
 Now, in order to create a random instance of `Car` you would:
+
 ```kotlin
+val factory = FixtureFactory.build {}
 
-val factory = FixtureFactory.build{}
+val randomElectricCar = factory.createInstance < Car<ElectricEngine>()
 
-val randomElectricCar = factory.createInstance<Car<ElectricEngine>()
+println("$randomElectricCar")
 
+>>> Car(name=name_3#wYu, age=-11130, engine=ElectricEngine(name=name_LVRF)))
 ```
 
 ## Supported Features
@@ -47,7 +48,8 @@ val randomElectricCar = factory.createInstance<Car<ElectricEngine>()
  * Creation of primitive types and Strings
    `Boolean`, `Byte`, `Char`, `Short`, `Int`, `Long`, `Float`, `Double`, `String`
  * Creation of classes / class hierarchies that are instantiable by (private) constructors
- * Creation of Arrays - Typed arrays and Kotlin Arrays (like `ByteArray` as opposed to `Array<Byte>`)
+ * `Enum`s - an enum's instance is chosen randomly
+ * Creation of Arrays - Typed arrays and Kotlin Arrays (like `Array<Byte>` and `ByteArray`)
  * Creation of Basic collection classes: 
     * `Collection ` - creates list
     * `List`    
@@ -56,7 +58,7 @@ val randomElectricCar = factory.createInstance<Car<ElectricEngine>()
  * Generic Types  
  * Creation of some java.time classes like:
     * `ZoneId`, `Instant`, `LocalDate`, `LocalDateTime`, `ZonedDateTime` 
- * `CustomCreator`s - allows you to manually implement instantiation strategy of types that are not supported out of the box
+ * `CustomCreator`s - allow you to manually implement instantiation strategy of types that are not supported out of the box
     or to override existing behavior for a given type
 
 ## Worth to know
