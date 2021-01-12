@@ -149,6 +149,11 @@ bintray {
 //            vcsTag = rootProject.version.toString()
             gpg.sign = publish
             githubReleaseNotesFile = "README.md"
+
+            mavenCentralSync.apply {
+                sync = true
+                close = "1"
+            }
         }
     }
 }
