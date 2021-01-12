@@ -31,5 +31,5 @@ jobs:
       run: ./gradlew build -i
 
     - name: Release to bintray and maven central
-      run: ./gradlew -i -Prelease=true -PbintrayUsername=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_API_KEY -PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PASSWORD bintrayPublish
+      run: ./gradlew -i -Prelease=true -PbintrayUsername=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_API_KEY -PsonatypeUsername=$SONATYPE_USER -PsonatypePassword=$SONATYPE_PASSWORD bintrayUpload bintrayPublish
 

@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "net.datenstrudel"
-version = "0.1.1"
+version = "0.1.2"
 
 
 val jdkVersion = "11"
@@ -127,6 +127,7 @@ bintray {
     user = project.findProperty("bintrayUsername").toString()
     key = project.findProperty("bintrayApiKey").toString()
     publish = ( rootProject.findProperty("release") == "true" )
+    override = true
 
     setPublications("central")
 
@@ -141,13 +142,14 @@ bintray {
         websiteUrl = githubUrl
         issueTrackerUrl = "$githubUrl/issues"
         githubReleaseNotesFile = "$rootDir/README.md"
+        publish = true
 
         version.apply {
             name = rootProject.version.toString()
-            desc = description
+            desc = pomDescription
             released = Date().toString()
-//            vcsTag = rootProject.version.toString()
-            gpg.sign = publish
+            vcsTag = rootProject.version.toString()
+            gpg.sign = true
             githubReleaseNotesFile = "README.md"
 
             mavenCentralSync.apply {
