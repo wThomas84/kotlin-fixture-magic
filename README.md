@@ -1,5 +1,7 @@
 # kotlin-fixture-magic
 
+![Build and test kotlin-fixture-magic](https://github.com/wThomas84/kotlin-fixture-magic/workflows/Build%20and%20test%20kotlin-fixture-magic/badge.svg)
+
 Allows creation of random instances of (many) arbitrary classes in Kotlin.
 Works only on JVM.
 
