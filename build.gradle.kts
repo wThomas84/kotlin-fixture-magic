@@ -153,6 +153,8 @@ bintray {
             mavenCentralSync.apply {
                 sync = true
                 close = "1"
+                user = rootProject.findProperty("sonatypeUsername").toString()
+                password = rootProject.findProperty("sonatypePassword").toString()
             }
         }
     }
