@@ -1,10 +1,12 @@
+import java.util.Date
+
 plugins {
     val kotlinVersion = "1.4.21"
     id("java")
     kotlin("jvm")  version(kotlinVersion)
-//    id("org.jetbrains.dokka") version (kotlinVersion)
-    id("org.kordamp.gradle.kotlin-project") version "0.40.0"
-    id("org.kordamp.gradle.bintray") version "0.40.0"
+    id("org.jetbrains.dokka") version "1.4.20"
+    id("maven-publish")
+    id("com.jfrog.bintray") version "1.8.5"
 }
 
 group = "net.datenstrudel"
@@ -21,70 +23,8 @@ if (!project.hasProperty("release"))            extra.apply{set ("release", "fal
 
 
 repositories {
-    mavenCentral()
     jcenter()
-    maven {
-        url = uri("https://plugins.gradle.org/m2/")
-    }
-}
-
-license{
-    this.ignoreFailures = true
-}
-
-config {
-    release = ( rootProject.findProperty("release") == "true" )
-
-    info {
-        name          = "kotlin-fixture-magic"
-        description   = "Allows creation of random instances of (many) arbitrary classes in Kotlin. JVM only"
-        vendor        = "datenstrudel"
-        inceptionYear = "2021"
-        tags          = listOf("kotlin", "testing", "reflection", "fixtures", "instantiation")
-
-        links {
-            website      = "https://github.com/wThomas84/kotlin-fixture-magic"
-            issueTracker = "https://github.com/wThomas84/kotlin-fixture-magic/issues"
-            scm          = "https://github.com/wThomas84/kotlin-fixture-magic.git"
-        }
-
-        credentials {
-            sonatype {
-                val sonatypeUsername: String by extra
-                val sonatypePassword: String by extra
-                username = sonatypeUsername
-                password = sonatypePassword
-            }
-        }
-
-        people {
-            person {
-                id    = "datenstrudel"
-                name  = "Thomas Wendzinski"
-                roles = listOf("developer")
-            }
-        }
-    }
-
-    licensing {
-        licenses {
-            license {
-                id = "Apache-2.0"
-            }
-        }
-    }
-
-    bintray {
-        userOrg      = "datenstrudel"
-        name         = rootProject.name
-        publish      = config.release
-        credentials {
-            val bintrayUsername: String by extra
-            val bintrayApiKey: String by extra
-            username = bintrayUsername
-            password = bintrayApiKey
-        }
-    }
+    mavenCentral()
 }
 
 dependencies {
@@ -106,11 +46,6 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.3.1")
 }
 
-//configure<JavaPluginConvention> {
-//    sourceCompatibility = JavaVersion.VERSION_11
-//    targetCompatibility = JavaVersion.VERSION_11
-//}
-
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -126,3 +61,95 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         jvmTarget = jdkVersion
     }
 }
+
+tasks {
+    dokkaHtml.configure {
+        outputDirectory.set(File("$buildDir/javadoc"))
+    }
+}
+
+val dokkaJar by tasks.creating(Jar::class) {
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
+    description = "Assembles Kotlin docs with Dokka"
+    archiveClassifier.set("javadoc")
+    from(tasks.dokkaHtml)
+    dependsOn(tasks.dokkaHtml)
+}
+
+val sourcesJar by tasks.creating(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.getByName("main").allSource)
+}
+
+val githubUrl = "https://github.com/wThomas84/kotlin-fixture-magic"
+val pomDescription = "Allows creation of random instances of (many) arbitrary classes in Kotlin. JVM only"
+
+publishing {
+    publications {
+        create<MavenPublication>("central") {
+            groupId = rootProject.group.toString()
+            artifactId = rootProject.name
+            version = rootProject.version.toString()
+            // This is the main artifact
+            from(components["java"])
+            artifact(dokkaJar)
+            artifact(sourcesJar)
+
+            pom {
+                name.set("kotlin-fixture-magic")
+                description.set(pomDescription)
+                url.set(githubUrl)
+
+                licenses{
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("datenstrudel")
+                        name.set("Thomas Wendzinski")
+                        email.set("twx1@gmx.de")
+                    }
+                }
+                scm {
+                    connection.set("git@github.com:wThomas84/kotlin-fixture-magic.git")
+                    developerConnection.set("git@github.com:wThomas84/kotlin-fixture-magic.git")
+                    url.set(project.findProperty("githubUrl").toString())
+                }
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.findProperty("bintrayUsername").toString()
+    key = project.findProperty("bintrayApiKey").toString()
+    publish = ( rootProject.findProperty("release") == "true" )
+
+    setPublications("central")
+
+    pkg.apply {
+        repo = "maven"
+        name = project.name
+        githubRepo = "wThomas84/kotlin-fixture-magic"
+        vcsUrl = "$githubUrl.git"
+        setLabels("kotlin", "testing", "reflection", "fixtures", "instantiation")
+        setLicenses("Apache-2.0")
+        desc = description
+        websiteUrl = githubUrl
+        issueTrackerUrl = "$githubUrl/issues"
+        githubReleaseNotesFile = "$rootDir/README.md"
+
+        version.apply {
+            name = rootProject.version.toString()
+            desc = description
+            released = Date().toString()
+//            vcsTag = rootProject.version.toString()
+            gpg.sign = publish
+            githubReleaseNotesFile = "README.md"
+        }
+    }
+}
+
