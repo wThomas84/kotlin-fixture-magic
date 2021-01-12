@@ -17,6 +17,23 @@ Another, more specific example could be testing of serialization/deserialization
 it is possible to serialize a given instance, deserialization can be much harder, e.g. if deserialization
 information (like specific types) is missing. In this case one could use this lib in order to simply create 
 random instances with all values filled in order to automate testing of (de-)serialization.
+## Usage
+
+Check the releases/* branches to obtain recent version 
+
+Using Gradle
+```kotlin
+testImplementation("net.datenstrudel:kotlin-fixture-magic:0.1.2")
+```
+Using Maven
+```xml
+<dependency>
+  <groupId>net.datenstrudel</groupId>
+  <artifactId>kotlin-fixture-magic</artifactId>
+  <version>0.1.2</version>
+</dependency>
+```
+
 
 ## Example
 
